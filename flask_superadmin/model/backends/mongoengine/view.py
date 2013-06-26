@@ -11,7 +11,6 @@ from flask import request
 SORTABLE_FIELDS = (
     mongoengine.BooleanField,
     mongoengine.DateTimeField,
-    mongoengine.DecimalField,
     mongoengine.FloatField,
     mongoengine.IntField,
     mongoengine.StringField,
