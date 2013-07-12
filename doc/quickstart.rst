@@ -241,7 +241,7 @@ Here's a quick rundown of the common customization parameters::
         # edit view options
         fields = ('email', 'active', 'roles')
         readonly_fields = ('email',)
-        exclude = ['password',]
+        exclude = ('password',)
         field_args = {
             'email': {'label': 'E-mail',
                       'description': 'Desc under the form input box'},

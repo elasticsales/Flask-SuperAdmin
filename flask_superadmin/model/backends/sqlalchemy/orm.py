@@ -173,5 +173,5 @@ class AdminModelConverter(ModelConverter):
 def model_form(model, base_class=Form, fields=None, readonly_fields=None,
                exclude=None, field_args=None, converter=None):
     return original_model_form(model, base_class=base_class, only=fields,
-                               exclude=exclude, field_args=field_args,
+                               exclude=list(exclude), field_args=field_args,
                                converter=converter)
