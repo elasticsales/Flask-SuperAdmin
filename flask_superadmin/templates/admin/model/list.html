@@ -77,15 +77,33 @@
                             {% if loop.first %}
                                 <td><a href="{{ url_for('.edit', pk=pk) }}">{{ admin_view.get_column(instance, c) }}</a></td>
                             {% else %}
-
-                                {% with reference = admin_view.get_reference(admin_view.get_column(instance, c)) %}
-                                    {% if reference %}
-                                        <td><a href="{{ reference }}">{{ admin_view.get_column(instance, c) }}</a></td>
+                                {% with column = admin_view.get_column(instance, c) %}
+                                    {% if column is not iterable or column is string %}
+                                        {% set col_items = [column] %}
                                     {% else %}
-                                        <td>{{ admin_view.get_column(instance, c) }}</td>
+                                        {% set col_items = column %}
                                     {% endif %}
-                                {% endwith %}
 
+                                    {% if col_items|count == 0 %}
+                                        <td>None</td>
+                                    {% else %}
+                                        <td>
+                                            {% for col_item in col_items %}
+                                                {% if not loop.first %}
+                                                    , <!-- join multiple col_items with a comma -->
+                                                {% endif %}
+                                                {% with reference = admin_view.get_reference(col_item) %}
+                                                    {% if reference %}
+                                                        <a href="{{ reference }}">{{ col_item }}</a>
+                                                    {% else %}
+                                                        {{ col_item }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endfor %}
+                                        </td>
+                                    {% endif %}
+
+                                {% endwith %}
                             {% endif %}
                         {% else %}
                             <td><a href="{{ url_for('.edit', pk=pk) }}">{{ instance|string or 'None' }}</a></td>
