@@ -165,7 +165,7 @@ class BaseModelAdmin(BaseView):
         converter = self.get_converter()
         if isinstance(converter, type):
             converter = converter()
-        form = model_form(self.model, base_class=BaseForm, fields=self.fields,
+        form = model_form(self.model, base_class=BaseForm, fields=(),
                           readonly_fields=self.readonly_fields,
                           exclude=self.exclude, field_args=self.field_args,
                           converter=converter)

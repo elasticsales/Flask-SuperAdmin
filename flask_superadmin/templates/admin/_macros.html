@@ -154,34 +154,61 @@
    </section>
 {% endmacro %}
 
+{% macro render_formfield(field_name, readonly_fields) %}
+    {% if field_name in readonly_fields %}
+        {% with f = readonly_fields[field_name] %}
+            <section class="field">
+                <label>{{ f.label }}</label>
+                <div>
+                    <div class="readonly-value">
+                        {% if f.url %}
+                            <a href="{{ f.url }}"{% if f.url.startswith('http') %}target="_blank"{% endif %}>{{ f.value }}</a>
+                        {% else %}
+                            {{ f.value }}
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        {% endwith %}
+    {% else %}
+        {% if field_name != 'csrf_token' and field_name != 'csrf' %}
+            {{ render_ff(form._fields[field_name]) }}
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
 {% macro render_formfields(form) %}
     <fieldset>
         {% set readonly_fields = admin_view.get_readonly_fields(instance) %}
-        {% set field_names = admin_view.fields or form._fields.keys() %}
-        
-        {% for field_name in field_names %}
-            {% if field_name in readonly_fields %}
-                {% with f = readonly_fields[field_name] %}
-                    <section class="field">
-                        <label>{{ f.label }}</label>
-                        <div>
-                            <div class="readonly-value">
-                                {% if f.url %}
-                                    <a href="{{ f.url }}"{% if f.url.startswith('http') %}target="_blank"{% endif %}>{{ f.value }}</a>
-                                {% else %}
-                                    {{ f.value }}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </section>
-                {% endwith %}
-            {% else %}
-                {% if field_name != 'csrf_token' and field_name != 'csrf' %}
-                    {{ render_ff(form._fields[field_name]) }}
-                {% endif %}
-            {% endif %}
+        {% set all_fields = form._fields.keys() %}
+        {% if admin_view.fields %}
+            {% set visible_fields = admin_view.fields %}
+        {% else %}
+            {% set visible_fields = form._fields.keys() %}
+        {% endif %}
+
+        {% for field_name in visible_fields %}
+            {{ render_formfield(field_name, readonly_fields) }}
         {% endfor %}
 
+        {% if visible_fields|count < all_fields|count %}
+            <div id="show-hidden" class="accordion">
+                <div class="accordion-group">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#show-hidden" href="#hidden-fields">
+                            Show all fields
+                        </a>
+                    </div>
+                    <div id="hidden-fields" class="accordion-body collapse">
+                        {% for field_name in all_fields %}
+                            {% if field_name not in visible_fields %}
+                                {{ render_formfield(field_name, readonly_fields) }}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </fieldset>
 {% endmacro %}
 
