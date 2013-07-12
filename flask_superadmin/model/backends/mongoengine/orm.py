@@ -211,7 +211,7 @@ def model_fields(model, fields=None, readonly_fields=None, exclude=None,
     converter = converter or ModelConverter()
     field_args = field_args or {}
 
-    field_names = fields if fields else model._fields.keys()
+    field_names = fields if fields else sorted(model._fields.keys())
     field_names = (x for x in field_names if x not in exclude)
 
     field_dict = {}

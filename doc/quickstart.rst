@@ -224,8 +224,7 @@ If you want to customize model views, you have two options:
 1. Change behavior by overriding public properties that control how view works
 2. Change behavior by overriding methods
 
-For example, if you want to disable model creation, show only 'login' and 'email' columns in the list view,
-you can do something like this::
+Here's a quick rundown of the common customization parameters::
 
     from flask.ext.superadmin import Admin, model
 
@@ -233,7 +232,21 @@ you can do something like this::
 
     class UserModel(model.ModelAdmin):
         session = db.session
-        list_display = ('username','email')
+
+        # list view options
+        list_per_page = 20
+        list_display = ('email', 'active')
+        search_fields = ('email',)
+
+        # edit view options
+        fields = ('email', 'active', 'roles')
+        readonly_fields = ('email',)
+        exclude = ('password',)
+        field_args = {
+            'email': {'label': 'E-mail',
+                      'description': 'Desc under the form input box'},
+            'model_field': { label, description, validators, filters, and/or default },
+            }
 
     admin = Admin(app)
     admin.register(User, UserModel)

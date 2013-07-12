@@ -136,7 +136,7 @@ def test_exclude():
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        eq_(Form()._fields.keys(), ['csrf_token', 'age'])
+        eq_(sorted(Form()._fields.keys()), ['age', 'csrf_token'])
 
 def test_fields():
     app, admin = setup()
@@ -146,14 +146,15 @@ def test_fields():
         age = IntField()
 
     Person.drop_collection()
-
-    view = CustomModelView(Person, fields=['name'])
+    fields = ['name']
+    view = CustomModelView(Person, fields=fields)
     admin.add_view(view)
 
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        eq_(Form()._fields.keys(), ['csrf_token', 'name'])
+        eq_(view.fields, fields)
+        eq_(sorted(Form()._fields.keys()), ['age', 'csrf_token', 'name'])
 
 def test_fields_and_exclude():
     app, admin = setup()
@@ -170,7 +171,7 @@ def test_fields_and_exclude():
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        eq_(Form()._fields.keys(), ['csrf_token', 'age'])
+        eq_(sorted(Form()._fields.keys()), ['age', 'csrf_token'])
 
 def test_search_fields():
     app, admin = setup()
