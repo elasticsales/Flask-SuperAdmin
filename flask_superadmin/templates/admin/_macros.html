@@ -180,11 +180,11 @@
 {% macro render_formfields(form) %}
     <fieldset>
         {% set readonly_fields = admin_view.get_readonly_fields(instance) %}
-        {% set all_fields = form._fields.keys() %}
+        {% set all_fields = form._fields.keys()|sort %}
         {% if admin_view.fields %}
             {% set visible_fields = admin_view.fields %}
         {% else %}
-            {% set visible_fields = form._fields.keys() %}
+            {% set visible_fields = form._fields.keys()|sort %}
         {% endif %}
 
         {% for field_name in visible_fields %}
