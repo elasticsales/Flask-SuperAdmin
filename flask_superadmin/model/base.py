@@ -198,7 +198,8 @@ class BaseModelAdmin(BaseView):
         """
         raise NotImplemented()
 
-    def get_form(self):
+    def get_edit_form(self, obj):
+        """Return a form instance used for editing existing objects."""
         model_form = self.get_model_form()
         converter = self.get_converter()
         if isinstance(converter, type):
@@ -209,10 +210,14 @@ class BaseModelAdmin(BaseView):
                           readonly_fields=self.readonly_fields,
                           exclude=self.exclude, field_args=self.field_args,
                           converter=converter)
-        return form
+        return form(obj=obj)
 
-    def get_add_form(self):
-        return self.get_form()
+    def get_add_form(self, obj=None):
+        """
+        Return a form instance used for adding new objects. By default it's
+        the same as the form instance we use for editing an object.
+        """
+        return self.get_edit_form(obj)
 
     def get_objects(self, *pks):
         raise NotImplemented()
@@ -272,9 +277,8 @@ class BaseModelAdmin(BaseView):
         if not self.can_create:
             abort(403)
 
-        Form = self.get_add_form()
         if request.method == 'POST':
-            form = Form()
+            form = self.get_add_form()
             if form.validate_on_submit():
                 try:
                     instance = self.save_model(self.model(), form, adding=True)
@@ -289,8 +293,10 @@ class BaseModelAdmin(BaseView):
                           error=str(ex)), 'error')
 
         else:
+            # pass a new model into the form so that all the defaults can
+            # be filled in
             try:
-                form = Form(obj=self.model())
+                form = self.get_add_form(obj=self.model())
             except TypeError:
                 raise Exception('The database model for %r should have an '
                                 '__init__ with all arguments set to defaults.'
@@ -397,36 +403,22 @@ class BaseModelAdmin(BaseView):
         except self.model.DoesNotExist:
             abort(404)
 
-        Form = self.get_form()
-
-        if request.method == 'POST':
-            form = Form(obj=instance)
-            form = self.manipulate_form_instance(form)
-            if form.validate_on_submit():
-                try:
-                    self.save_model(instance, form, adding=False)
-                    flash(
-                        'Changes to %s saved successfully' % self.get_display_name(),
-                        'success'
-                    )
-                    return self.dispatch_save_redirect(instance)
-                except Exception, ex:
-                    print traceback.format_exc()
-                    flash(gettext('Failed to edit model. %(error)s',
-                                  error=str(ex)), 'error')
-        else:
-            form = Form(obj=instance)
-            form = self.manipulate_form_instance(form)
+        form = self.get_edit_form(instance)
+        if request.method == 'POST' and form.validate_on_submit():
+            try:
+                self.save_model(instance, form, adding=False)
+                flash(
+                    'Changes to %s saved successfully' % self.get_display_name(),
+                    'success'
+                )
+                return self.dispatch_save_redirect(instance)
+            except Exception, ex:
+                print traceback.format_exc()
+                flash(gettext('Failed to edit model. %(error)s',
+                              error=str(ex)), 'error')
 
         return self.render(self.edit_template, model=self.model, form=form,
                            pk=self.get_pk(instance), instance=instance)
-
-    def manipulate_form_instance(self, form_instance):
-        """ Handy method to manipulate the form instance before it's
-        rendered/validated. You can override this method and change validators,
-        field choices, etc.
-        """
-        return form_instance
 
     @expose('/<pk>/delete/', methods=('GET', 'POST'))
     def delete(self, pk=None, *pks):
