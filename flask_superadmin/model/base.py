@@ -347,14 +347,14 @@ class BaseModelAdmin(BaseView):
 
     @property
     def filters(self):
-        args = dict(request.args)
+        args = request.args.to_dict()
 
         # pop everything that isn't a filter
         args.pop("sort", None)
         args.pop("page", None)
         args.pop("q", None)
 
-        args = {k: v[0] for k, v in list(args.items()) if k and v and v[0]}
+        args = {k: v for k, v in list(args.items()) if k and v}
         return args
 
     def get_list_filters(self):
