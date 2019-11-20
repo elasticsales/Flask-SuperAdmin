@@ -11,17 +11,17 @@ import django
 from django.conf import settings
 
 settings.configure(
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'mydatabase.sqlite',
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": "mydatabase.sqlite",
         }
     }
 )
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '123456790'
-app.config['WTF_CSRF_ENABLED'] = False
+app.config["SECRET_KEY"] = "123456790"
+app.config["WTF_CSRF_ENABLED"] = False
 
 admin = Admin(app)
 
@@ -31,22 +31,24 @@ from examples.django.utils import install_models
 
 
 class CustomModelView(ModelAdmin):
-    def __init__(self, model, name=None, category=None, endpoint=None,
-                 url=None, **kwargs):
+    def __init__(
+        self, model, name=None, category=None, endpoint=None, url=None, **kwargs
+    ):
         for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
-        super(CustomModelView, self).__init__(model, name, category, endpoint,
-                                              url)
+        super(CustomModelView, self).__init__(model, name, category, endpoint, url)
+
 
 def test_list():
     django.setup()
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         age = models.IntegerField()
 
         class Meta:
-            app_label = 'test'
+            app_label = "test"
 
         def __str__(self):
             return self.name
@@ -55,7 +57,7 @@ def test_list():
     try:
         install_models(Person)
     except DatabaseError as e:
-        if 'already exists' not in str(e):
+        if "already exists" not in str(e):
             raise
 
     Person.objects.all().delete()
@@ -64,52 +66,52 @@ def test_list():
     admin.add_view(view)
 
     eq_(view.model, Person)
-    eq_(view.name, 'Person')
-    eq_(view.endpoint, 'person')
-    eq_(view.url, '/admin/person')
+    eq_(view.name, "Person")
+    eq_(view.endpoint, "person")
+    eq_(view.url, "/admin/person")
 
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        ok_(isinstance(Form()._fields['name'], wtforms.TextField))
-        ok_(isinstance(Form()._fields['age'], wtforms.IntegerField))
+        ok_(isinstance(Form()._fields["name"], wtforms.TextField))
+        ok_(isinstance(Form()._fields["age"], wtforms.IntegerField))
 
     # Make some test clients
     client = app.test_client()
 
-    resp = client.get('/admin/person/')
+    resp = client.get("/admin/person/")
     eq_(resp.status_code, 200)
 
-    resp = client.get('/admin/person/add/')
+    resp = client.get("/admin/person/add/")
     eq_(resp.status_code, 200)
 
-    resp = client.post('/admin/person/add/',
-                     data=dict(name='name', age='18'))
+    resp = client.post("/admin/person/add/", data=dict(name="name", age="18"))
     eq_(resp.status_code, 302)
 
     person = Person.objects.all()[0]
-    eq_(person.name, 'name')
+    eq_(person.name, "name")
     eq_(person.age, 18)
 
-    resp = client.get('/admin/person/')
+    resp = client.get("/admin/person/")
     eq_(resp.status_code, 200)
     ok_(person.name in resp.data.decode())
 
-    resp = client.get('/admin/person/%s/' % person.pk)
+    resp = client.get("/admin/person/%s/" % person.pk)
     eq_(resp.status_code, 200)
 
-    resp = client.post('/admin/person/%s/' % person.pk, data=dict(name='changed'))
+    resp = client.post("/admin/person/%s/" % person.pk, data=dict(name="changed"))
     eq_(resp.status_code, 302)
 
     person = Person.objects.all()[0]
-    eq_(person.name, 'changed')
+    eq_(person.name, "changed")
     eq_(person.age, 18)
 
-    resp = client.post('/admin/person/%s/delete/' % person.pk)
+    resp = client.post("/admin/person/%s/delete/" % person.pk)
     eq_(resp.status_code, 200)
     eq_(Person.objects.count(), 1)
 
-    resp = client.post('/admin/person/%s/delete/' % person.pk, data={'confirm_delete': True})
+    resp = client.post(
+        "/admin/person/%s/delete/" % person.pk, data={"confirm_delete": True}
+    )
     eq_(resp.status_code, 302)
     eq_(Person.objects.count(), 0)
-
