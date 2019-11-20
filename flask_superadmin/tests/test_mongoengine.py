@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+
+import os
 from builtins import str
 from nose.tools import eq_, ok_, raises
 
@@ -22,7 +24,7 @@ class CustomModelView(ModelAdmin):
 
 
 def setup():
-    connect("superadmin_test", host="mongodb")
+    connect("superadmin_test", host=os.environ.get("MONGODB_HOST", "mongodb"))
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "1"
     app.config["WTF_CSRF_ENABLED"] = False
