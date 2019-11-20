@@ -3,6 +3,13 @@ Tools for generating forms based on Django Model schemas.
 """
 from __future__ import unicode_literals
 
+try:
+    # Python 2
+    from __builtin__ import str as builtin_str
+except ImportError:
+    # Python 3
+    from builtins import str as builtin_str
+
 from builtins import object
 from wtforms import fields as f
 from wtforms import Form
@@ -197,5 +204,5 @@ def model_form(model, base_class=Form, fields=None, readonly_fields=None,
     exclude = ([f for f in exclude] if exclude else []) + ['id']
     field_dict = model_fields(model, fields, readonly_fields, exclude,
                               field_args, converter)
-    return type(model._meta.object_name + 'Form', (base_class, ), field_dict)
+    return type(builtin_str(model._meta.object_name + 'Form'), (base_class, ), field_dict)
 
