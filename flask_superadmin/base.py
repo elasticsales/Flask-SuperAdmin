@@ -1,11 +1,16 @@
+from __future__ import unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from functools import wraps
 
 from flask import Blueprint, render_template, url_for, abort
 
 from flask_superadmin import babel
+from future.utils import with_metaclass
 
 
 def expose(url='/', methods=('GET',)):
@@ -69,7 +74,7 @@ class AdminViewMeta(type):
                 setattr(cls, p, _wrap_view(attr))
 
 
-class BaseView(object):
+class BaseView(with_metaclass(AdminViewMeta, object)):
     """
         Base administrative view.
 
@@ -80,7 +85,6 @@ class BaseView(object):
                 def index(self):
                     return 'Hello World!'
     """
-    __metaclass__ = AdminViewMeta
 
     def __init__(self, name=None, category=None, endpoint=None, url=None, static_folder=None):
         """
@@ -223,7 +227,7 @@ class AdminIndexView(BaseView):
 
     @expose('/')
     def index(self):
-        return self.render('admin/index.html')
+        return self.render('superadmin/index.html')
 
 
 class MenuItem(object):
@@ -253,7 +257,7 @@ class MenuItem(object):
 
         self._cached_url = url_for('%s.%s' % (self._view.endpoint, self._view._default_view))
         if getattr(self._view, 'default_filters', None):
-            self._cached_url += '?' + urllib.urlencode(self._view.default_filters)
+            self._cached_url += '?' + urllib.parse.urlencode(self._view.default_filters)
 
         return self._cached_url
 

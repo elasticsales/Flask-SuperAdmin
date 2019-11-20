@@ -1,4 +1,5 @@
-from nose.tools import eq_, ok_, raises
+from __future__ import unicode_literals
+from nose.tools import eq_, ok_
 
 import wtforms
 
@@ -6,8 +7,8 @@ from flask import Flask
 from flask_superadmin import Admin
 
 
+import django
 from django.conf import settings
-
 
 settings.configure(
     DATABASES = {
@@ -32,25 +33,29 @@ from examples.django.utils import install_models
 class CustomModelView(ModelAdmin):
     def __init__(self, model, name=None, category=None, endpoint=None,
                  url=None, **kwargs):
-        for k, v in kwargs.iteritems():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
         super(CustomModelView, self).__init__(model, name, category, endpoint,
                                               url)
 
 def test_list():
+    django.setup()
     class Person(models.Model):
         name = models.CharField(max_length=255)
         age = models.IntegerField()
 
-        def __unicode__(self):
+        class Meta:
+            app_label = 'test'
+
+        def __str__(self):
             return self.name
 
     # Create tables in the database if they don't exists
     try:
         install_models(Person)
-    except DatabaseError, e:
-        if 'already exists' not in e.message:
+    except DatabaseError as e:
+        if 'already exists' not in str(e):
             raise
 
     Person.objects.all().delete()
@@ -88,7 +93,7 @@ def test_list():
 
     resp = client.get('/admin/person/')
     eq_(resp.status_code, 200)
-    ok_(person.name in resp.data)
+    ok_(person.name in resp.data.decode())
 
     resp = client.get('/admin/person/%s/' % person.pk)
     eq_(resp.status_code, 200)

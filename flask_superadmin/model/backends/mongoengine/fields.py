@@ -1,6 +1,9 @@
 """
 Useful form fields for use with the mongoengine.
 """
+from __future__ import unicode_literals
+from builtins import str
+from past.builtins import basestring
 import operator
 
 from wtforms import widgets

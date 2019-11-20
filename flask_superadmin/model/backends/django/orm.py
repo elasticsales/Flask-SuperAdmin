@@ -1,7 +1,9 @@
 """
 Tools for generating forms based on Django Model schemas.
 """
+from __future__ import unicode_literals
 
+from builtins import object
 from wtforms import fields as f
 from wtforms import Form
 from wtforms import validators
@@ -61,7 +63,7 @@ class AdminModelConverter(ModelConverterBase):
         converters = {}
         if simple_conversions is None:
             simple_conversions = self.DEFAULT_SIMPLE_CONVERSIONS
-        for field_type, django_fields in simple_conversions.iteritems():
+        for field_type, django_fields in list(simple_conversions.items()):
             converter = self.make_simple_converter(field_type)
             for name in django_fields:
                 converters[name] = converter

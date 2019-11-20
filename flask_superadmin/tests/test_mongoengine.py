@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import str
 from nose.tools import eq_, ok_, raises
 
 import wtforms
@@ -12,7 +14,7 @@ from flask_superadmin.model.backends.mongoengine.view import ModelAdmin
 class CustomModelView(ModelAdmin):
     def __init__(self, model, name=None, category=None, endpoint=None,
                  url=None, **kwargs):
-        for k, v in kwargs.iteritems():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
         super(CustomModelView, self).__init__(model, name, category, endpoint,
@@ -20,7 +22,7 @@ class CustomModelView(ModelAdmin):
 
 
 def setup():
-    connect('superadmin_test')
+    connect('superadmin_test', host='mongodb')
     app = Flask(__name__)
     app.config['SECRET_KEY'] = '1'
     app.config['WTF_CSRF_ENABLED'] = False
@@ -72,7 +74,7 @@ def test_model():
 
     resp = client.get('/admin/person/')
     eq_(resp.status_code, 200)
-    ok_(str(person.pk) in resp.data)
+    ok_(str(person.pk) in resp.data.decode())
 
     resp = client.get('/admin/person/%s/' % person.pk)
     eq_(resp.status_code, 200)
@@ -110,16 +112,16 @@ def test_list_display():
     client = app.test_client()
 
     resp = client.get('/admin/person/')
-    ok_('Name' in resp.data)
-    ok_('Age' in resp.data)
+    ok_('Name' in resp.data.decode())
+    ok_('Age' in resp.data.decode())
 
     resp = client.post('/admin/person/add/',
                      data=dict(name='Steve', age='18'))
     eq_(resp.status_code, 302)
 
     resp = client.get('/admin/person/')
-    ok_('Steve' in resp.data)
-    ok_('18' in resp.data)
+    ok_('Steve' in resp.data.decode())
+    ok_('18' in resp.data.decode())
 
 
 def test_exclude():
@@ -137,7 +139,7 @@ def test_exclude():
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        eq_(Form()._fields.keys(), ['csrf_token', 'age'])
+        eq_(list(Form()._fields.keys()), ['age'])
 
 def test_fields():
     app, admin = setup()
@@ -154,7 +156,7 @@ def test_fields():
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        eq_(Form()._fields.keys(), ['csrf_token', 'name'])
+        eq_(list(Form()._fields.keys()), ['name'])
 
 def test_fields_and_exclude():
     app, admin = setup()
@@ -171,7 +173,7 @@ def test_fields_and_exclude():
     # Verify form
     with app.test_request_context():
         Form = view.get_form()
-        eq_(Form()._fields.keys(), ['csrf_token', 'age'])
+        eq_(list(Form()._fields.keys()), ['age'])
 
 def test_search_fields():
     app, admin = setup()
@@ -192,13 +194,13 @@ def test_search_fields():
     client = app.test_client()
 
     resp = client.get('/admin/person/')
-    ok_('name="q" class="search-input"' in resp.data)
-    ok_('John' in resp.data)
-    ok_('Michael' in resp.data)
+    ok_('name="q" class="search-input"' in resp.data.decode())
+    ok_('John' in resp.data.decode())
+    ok_('Michael' in resp.data.decode())
 
     resp = client.get('/admin/person/?q=john')
-    ok_('John' in resp.data)
-    ok_('Michael' not in resp.data)
+    ok_('John' in resp.data.decode())
+    ok_('Michael' not in resp.data.decode())
 
 
 def test_pagination():
@@ -221,21 +223,21 @@ def test_pagination():
     client = app.test_client()
 
     resp = client.get('/admin/person/')
-    ok_('<div class="total-count">Total count: 4</div>' in resp.data)
-    ok_('<a href="#">1</a>' in resp.data)  # make sure the first page is active (i.e. has no url)
-    ok_('John' in resp.data)
-    ok_('Michael' in resp.data)
-    ok_('Steve' not in resp.data)
-    ok_('Ron' not in resp.data)
+    ok_('<div class="total-count">Total count: 4</div>' in resp.data.decode())
+    ok_('<a href="#">1</a>' in resp.data.decode())  # make sure the first page is active (i.e. has no url)
+    ok_('John' in resp.data.decode())
+    ok_('Michael' in resp.data.decode())
+    ok_('Steve' not in resp.data.decode())
+    ok_('Ron' not in resp.data.decode())
 
     # default page == page 0
-    eq_(resp.data, client.get('/admin/person/?page=0').data)
+    eq_(resp.data.decode(), client.get('/admin/person/?page=0').data.decode())
 
     resp = client.get('/admin/person/?page=1')
-    ok_('John' not in resp.data)
-    ok_('Michael' not in resp.data)
-    ok_('Steve' in resp.data)
-    ok_('Ron' in resp.data)
+    ok_('John' not in resp.data.decode())
+    ok_('Michael' not in resp.data.decode())
+    ok_('Steve' in resp.data.decode())
+    ok_('Ron' in resp.data.decode())
 
 def test_sort():
     app, admin = setup()
@@ -257,28 +259,28 @@ def test_sort():
     client = app.test_client()
 
     resp = client.get('/admin/person/?sort=name')
-    ok_('John' in resp.data)
-    ok_('Michael' in resp.data)
-    ok_('Ron' not in resp.data)
-    ok_('Steve' not in resp.data)
+    ok_('John' in resp.data.decode())
+    ok_('Michael' in resp.data.decode())
+    ok_('Ron' not in resp.data.decode())
+    ok_('Steve' not in resp.data.decode())
 
     resp = client.get('/admin/person/?sort=-name')
-    ok_('John' not in resp.data)
-    ok_('Michael' not in resp.data)
-    ok_('Ron' in resp.data)
-    ok_('Steve' in resp.data)
+    ok_('John' not in resp.data.decode())
+    ok_('Michael' not in resp.data.decode())
+    ok_('Ron' in resp.data.decode())
+    ok_('Steve' in resp.data.decode())
 
     resp = client.get('/admin/person/?sort=age')
-    ok_('John' in resp.data)
-    ok_('Michael' not in resp.data)
-    ok_('Ron' not in resp.data)
-    ok_('Steve' in resp.data)
+    ok_('John' in resp.data.decode())
+    ok_('Michael' not in resp.data.decode())
+    ok_('Ron' not in resp.data.decode())
+    ok_('Steve' in resp.data.decode())
 
     resp = client.get('/admin/person/?sort=-age')
-    ok_('John' not in resp.data)
-    ok_('Michael' in resp.data)
-    ok_('Ron' in resp.data)
-    ok_('Steve' not in resp.data)
+    ok_('John' not in resp.data.decode())
+    ok_('Michael' in resp.data.decode())
+    ok_('Ron' in resp.data.decode())
+    ok_('Steve' not in resp.data.decode())
 
 def test_reference_linking():
     app, admin = setup()
@@ -315,13 +317,13 @@ def test_reference_linking():
     # test linking on a list page
     resp = client.get('/admin/person/')
     dog_link = '<a href="/admin/dog/%s/">Sparky</a>' % dog.pk
-    ok_(dog_link in resp.data)
+    ok_(dog_link in resp.data.decode())
 
     # test linking on an edit page
     resp = client.get('/admin/person/%s/' % person.pk)
-    ok_('<textarea class="" id="name" name="name">Stan</textarea>' in resp.data)
-    ok_('<input class="" id="age" name="age" type="text" value="10">' in resp.data)
-    ok_(dog_link in resp.data)
+    ok_('<textarea class="" id="name" name="name">Stan</textarea>' in resp.data.decode())
+    ok_('<input class="" id="age" name="age" type="text" value="10">' in resp.data.decode())
+    ok_(dog_link in resp.data.decode())
 
 def test_no_csrf_in_form():
     app, admin = setup()
@@ -339,9 +341,9 @@ def test_no_csrf_in_form():
     admin.add_view(view)
 
     resp = client.get('/admin/person/%s/' % person.pk)
-    ok_('<textarea class="" id="name" name="name">Eric</textarea>' in resp.data)
-    ok_('<input class="" id="age" name="age" type="text" value="10">' in resp.data)
-    ok_('<label for="csrf_token">Csrf Token</label>' not in resp.data)
+    ok_('<textarea class="" id="name" name="name">Eric</textarea>' in resp.data.decode())
+    ok_('<input class="" id="age" name="age" type="text" value="10">' in resp.data.decode())
+    ok_('<label for="csrf_token">Csrf Token</label>' not in resp.data.decode())
 
 def test_requred_int_field():
     app, admin = setup()
@@ -359,6 +361,6 @@ def test_requred_int_field():
 
     resp = client.post('/admin/person/add/', data=dict(name='name', age='0'))
     eq_(resp.status_code, 302)
-    ok_('This field is required.' not in resp.data)
-    ok_('error.' not in resp.data)
+    ok_('This field is required.' not in resp.data.decode())
+    ok_('error.' not in resp.data.decode())
 

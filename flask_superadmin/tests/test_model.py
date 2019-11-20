@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import object
 from nose.tools import eq_, ok_
 
 import wtforms
@@ -33,7 +35,7 @@ class MockModelView(base.BaseModelAdmin):
     def __init__(self, model, name=None, category=None, endpoint=None,
                  url=None, **kwargs):
         # Allow to set any attributes from parameters
-        for k, v in kwargs.iteritems():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
         super(MockModelView, self).__init__(model, name, category, endpoint, url)
@@ -73,7 +75,7 @@ class MockModelView(base.BaseModelAdmin):
         columns = ['col1', 'col2', 'col3']
 
         if self.excluded_list_columns:
-            return filter(lambda x: x not in self.excluded_list_columns, columns)
+            return [x for x in columns if x not in self.excluded_list_columns]
 
         return columns
 
@@ -90,7 +92,7 @@ class MockModelView(base.BaseModelAdmin):
 
     def get_list(self, page, sort, sort_desc, search_query, **kwargs):
         self.search_arguments.append((page, sort, sort_desc, search_query))
-        return len(self.all_models), self.all_models.itervalues()
+        return len(self.all_models), iter(list(self.all_models.values()))
 
     def save_model(self, instance, form, adding=False):
         if adding:
@@ -160,7 +162,7 @@ def test_mockview():
     # Try model edit view
     rv = client.get('/admin/model/3/')
     eq_(rv.status_code, 200)
-    ok_('test1' in rv.data)
+    ok_('test1' in rv.data.decode())
 
     rv = client.post('/admin/model/3/',
                      data=dict(col1='test!', col2='test@', col3='test#'))
@@ -197,7 +199,7 @@ def test_permissions():
     rv = client.get('/admin/model/1/')
     # 200 resp, but readonly fields
     eq_(rv.status_code, 200)
-    eq_(rv.data.count('<div class="readonly-value">'), 3)
+    eq_(rv.data.decode().count('<div class="readonly-value">'), 3)
 
     view.can_delete = False
     rv = client.post('/admin/model/1/delete/')
@@ -214,36 +216,36 @@ def test_permissions_and_add_delete_buttons():
 
     resp = client.get('/admin/model/')
     eq_(resp.status_code, 200)
-    ok_('Add Model' in resp.data)
+    ok_('Add Model' in resp.data.decode())
 
     view.can_create = False
     resp = client.get('/admin/model/')
     eq_(resp.status_code, 200)
-    ok_('Add Model' not in resp.data)
+    ok_('Add Model' not in resp.data.decode())
 
     view.can_edit = False
     view.can_delete = False
     resp = client.get('/admin/model/1/')
     eq_(resp.status_code, 200)
-    ok_('Submit' not in resp.data)
-    ok_('Save and stay on page' not in resp.data)
-    ok_('Delete' not in resp.data)
+    ok_('Submit' not in resp.data.decode())
+    ok_('Save and stay on page' not in resp.data.decode())
+    ok_('Delete' not in resp.data.decode())
 
     view.can_edit = False
     view.can_delete = True
     resp = client.get('/admin/model/1/')
     eq_(resp.status_code, 200)
-    ok_('Submit' not in resp.data)
-    ok_('Save and stay on page' not in resp.data)
-    ok_('Delete' in resp.data)
+    ok_('Submit' not in resp.data.decode())
+    ok_('Save and stay on page' not in resp.data.decode())
+    ok_('Delete' in resp.data.decode())
 
     view.can_edit = True
     view.can_delete = False
     resp = client.get('/admin/model/1/')
     eq_(resp.status_code, 200)
-    ok_('Submit' in resp.data)
-    ok_('Save and stay on page' in resp.data)
-    ok_('Delete' not in resp.data)
+    ok_('Submit' in resp.data.decode())
+    ok_('Save and stay on page' in resp.data.decode())
+    ok_('Delete' not in resp.data.decode())
 
 
 def test_templates():
@@ -259,13 +261,13 @@ def test_templates():
     view.edit_template = 'mock.html'
 
     rv = client.get('/admin/model/')
-    eq_(rv.data, 'Success!')
+    eq_(rv.data.decode(), 'Success!')
 
     rv = client.get('/admin/model/add/')
-    eq_(rv.data, 'Success!')
+    eq_(rv.data.decode(), 'Success!')
 
     rv = client.get('/admin/model/1/')
-    eq_(rv.data, 'Success!')
+    eq_(rv.data.decode(), 'Success!')
 
 
 def test_list_display_header():
@@ -279,7 +281,7 @@ def test_list_display_header():
     client = app.test_client()
 
     rv = client.get('/admin/model/')
-    ok_('Test Header' in rv.data)
+    ok_('Test Header' in rv.data.decode())
 
 
 def test_search_fields():
@@ -293,5 +295,4 @@ def test_search_fields():
     client = app.test_client()
 
     rv = client.get('/admin/model/')
-    ok_('<div class="search">' in rv.data)
-
+    ok_('<div class="search">' in rv.data.decode())

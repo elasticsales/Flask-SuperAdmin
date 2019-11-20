@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from nose.tools import eq_, ok_, raises
 
 import wtforms
@@ -5,7 +6,7 @@ import wtforms
 from flask import Flask
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import ArgumentError
 from flask_superadmin import Admin
 from flask_superadmin.model.backends.sqlalchemy.view import ModelAdmin
 
@@ -13,7 +14,7 @@ from flask_superadmin.model.backends.sqlalchemy.view import ModelAdmin
 class CustomModelView(ModelAdmin):
     def __init__(self, model, session, name=None, category=None,
                  endpoint=None, url=None, **kwargs):
-        for k, v in kwargs.iteritems():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
         super(CustomModelView, self).__init__(model, session, name, category,
@@ -64,7 +65,7 @@ def test_model():
     Model1, Model2 = create_models(db)
     db.create_all()
 
-    view = CustomModelView(Model1, db.session)
+    view = CustomModelView(Model1, db.session, list_display=['test1', 'test2'])
     admin.add_view(view)
 
     eq_(view.model, Model1)
@@ -102,7 +103,7 @@ def test_model():
 
     resp = client.get('/admin/model1/')
     eq_(resp.status_code, 200)
-    ok_('test1large' in resp.data)
+    ok_('test1large' in resp.data.decode())
 
     resp = client.get('/admin/model1/%s/' % model.id)
     eq_(resp.status_code, 200)
@@ -125,7 +126,7 @@ def test_model():
     eq_(db.session.query(Model1).count(), 0)
 
 
-@raises(InvalidRequestError)
+@raises(ArgumentError)
 def test_no_pk():
     app, db, admin = setup()
 
@@ -153,8 +154,8 @@ def test_list_display():
     client = app.test_client()
 
     resp = client.get('/admin/model1view/')
-    ok_('Column1' in resp.data)
-    ok_('Test2' not in resp.data)
+    ok_('Column1' in resp.data.decode())
+    ok_('Test2' not in resp.data.decode())
 
 
 def test_exclude():
@@ -172,8 +173,8 @@ def test_exclude():
     client = app.test_client()
 
     resp = client.get('/admin/model1view/')
-    ok_('Test1' in resp.data)
-    ok_('Test2' not in resp.data)
+    ok_('Test1' in resp.data.decode())
+    ok_('Test2' not in resp.data.decode())
 
 
 def test_search_fields():
@@ -200,8 +201,8 @@ def test_search_fields():
     client = app.test_client()
 
     resp = client.get('/admin/model1view/?search=model1')
-    ok_('model1' in resp.data)
-    ok_('model2' not in resp.data)
+    ok_('model1' in resp.data.decode())
+    ok_('model2' not in resp.data.decode())
 
 
 def test_url_args():
@@ -225,35 +226,35 @@ def test_url_args():
     client = app.test_client()
 
     resp = client.get('/admin/model1view/')
-    ok_('data1' in resp.data)
-    ok_('data3' not in resp.data)
+    ok_('data1' in resp.data.decode())
+    ok_('data3' not in resp.data.decode())
 
     # page
     resp = client.get('/admin/model1view/?page=1')
-    ok_('data1' not in resp.data)
-    ok_('data3' in resp.data)
+    ok_('data1' not in resp.data.decode())
+    ok_('data3' in resp.data.decode())
 
     # sort
     resp = client.get('/admin/model1view/?sort=0&desc=1')
-    ok_('data1' not in resp.data)
-    ok_('data3' in resp.data)
-    ok_('data4' in resp.data)
+    ok_('data1' not in resp.data.decode())
+    ok_('data3' in resp.data.decode())
+    ok_('data4' in resp.data.decode())
 
     # search
     resp = client.get('/admin/model1view/?search=data1')
-    ok_('data1' in resp.data)
-    ok_('data2' not in resp.data)
+    ok_('data1' in resp.data.decode())
+    ok_('data2' not in resp.data.decode())
 
     resp = client.get('/admin/model1view/?search=^data1')
-    ok_('data2' not in resp.data)
+    ok_('data2' not in resp.data.decode())
 
     # like
     resp = client.get('/admin/model1view/?flt0=0&flt0v=data1')
-    ok_('data1' in resp.data)
+    ok_('data1' in resp.data.decode())
 
     # not like
     resp = client.get('/admin/model1view/?flt0=1&flt0v=data1')
-    ok_('data2' in resp.data)
+    ok_('data2' in resp.data.decode())
 
 
 def test_non_int_pk():
@@ -280,11 +281,11 @@ def test_non_int_pk():
 
     resp = client.get('/admin/modelview/')
     eq_(resp.status_code, 200)
-    ok_('test1' in resp.data)
+    ok_('test1' in resp.data.decode())
 
     resp = client.get('/admin/modelview/edit/?id=test1')
     eq_(resp.status_code, 200)
-    ok_('test2' in resp.data)
+    ok_('test2' in resp.data.decode())
 
 def test_reference_linking():
     app, db, admin = setup()
@@ -306,7 +307,7 @@ def test_reference_linking():
             self.name = name
             self.person_id = person_id
 
-        def __unicode__(self):
+        def __str__(self):
             return self.name
 
     db.create_all()
@@ -337,18 +338,18 @@ def test_reference_linking():
     # test linking on a list page
     resp = client.get('/admin/person/')
     dog_link = '<a href="/admin/dog/%s/">Sparky</a>' % dog.id
-    ok_(dog_link in resp.data)
+    ok_(dog_link in resp.data.decode())
 
     # test linking on an edit page
     resp = client.get('/admin/person/%s/' % person.id)
-    ok_('<input class="" id="name" name="name" type="text" value="Stan">' in resp.data)
-    ok_(dog_link in resp.data)
+    ok_('<input class="" id="name" name="name" type="text" value="Stan">' in resp.data.decode())
+    ok_(dog_link in resp.data.decode())
 
 def test_filters():
     app, db, admin = setup()
     Model1, Model2 = create_models(db)
 
-    view = CustomModelView(Model1, db.session)
+    view = CustomModelView(Model1, db.session, list_display=['test1', 'test2', 'test3', 'test4'])
 
     admin.add_view(view)
 
@@ -360,9 +361,9 @@ def test_filters():
 
     # empty
     resp = client.get('/admin/model1/?test1=invalid')
-    ok_('data1' not in resp.data)
+    ok_('data1' not in resp.data.decode())
 
     # not like
     resp = client.get('/admin/model1/?test1=data1')
-    ok_('data1' in resp.data)
-    ok_('data2' not in resp.data)
+    ok_('data1' in resp.data.decode())
+    ok_('data2' not in resp.data.decode())

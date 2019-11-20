@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import unicode_literals
+from builtins import str
+from builtins import object
 import math
 import re
 
@@ -281,8 +285,8 @@ class BaseModelAdmin(BaseView):
                     flash(gettext('New %(model)s saved successfully',
                           model=self.get_display_name()), 'success')
                     return self.dispatch_save_redirect(instance)
-                except Exception, ex:
-                    print traceback.format_exc()
+                except Exception as ex:
+                    print(traceback.format_exc())
                     if hasattr(self, 'session'):
                         self.session.rollback()
                     flash(gettext('Failed to add model. %(error)s',
@@ -328,7 +332,7 @@ class BaseModelAdmin(BaseView):
         args.pop('page', None)
         args.pop('q', None)
 
-        args = { k: v[0] for k, v in args.items() if k and v and v[0] }
+        args = { k: v[0] for k, v in list(args.items()) if k and v and v[0] }
         return args
 
     def get_list_filters(self):
@@ -409,8 +413,8 @@ class BaseModelAdmin(BaseView):
                         'success'
                     )
                     return self.dispatch_save_redirect(instance)
-                except Exception, ex:
-                    print traceback.format_exc()
+                except Exception as ex:
+                    print(traceback.format_exc())
                     flash(gettext('Failed to edit model. %(error)s',
                                   error=str(ex)), 'error')
         else:

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from nose.tools import ok_, eq_, raises
 
 from flask import Flask
@@ -138,15 +139,15 @@ def test_call():
     eq_(rv.status_code, 200)
 
     rv = client.get('/admin/mockview/')
-    eq_(rv.data, 'Success!')
+    eq_(rv.data.decode(), 'Success!')
 
     rv = client.get('/admin/mockview/test/')
-    eq_(rv.data, 'Success!')
+    eq_(rv.data.decode(), 'Success!')
 
     # Check authentication failure
     view.allow_call = False
     rv = client.get('/admin/mockview/')
-    eq_(rv.data, 'Failure!')
+    eq_(rv.data.decode(), 'Failure!')
 
 
 def test_permissions():
@@ -193,7 +194,7 @@ def test_delayed_init():
     client = app.test_client()
 
     rv = client.get('/admin/mockview/')
-    eq_(rv.data, 'Success!')
+    eq_(rv.data.decode(), 'Success!')
 
 
 @raises(Exception)

@@ -1,11 +1,15 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from builtins import str
 from flask_superadmin.model.base import BaseModelAdmin, prettify
 
-from orm import model_form, AdminModelConverter
+from .orm import model_form, AdminModelConverter
 
 import operator
 import mongoengine
 
 from flask import request
+from functools import reduce
 
 SORTABLE_FIELDS = (
     mongoengine.BooleanField,
@@ -60,7 +64,7 @@ class ModelAdmin(BaseModelAdmin):
     def get_queryset(self, filters=None):
         qs = self.model.objects
         if filters:
-            for key in filters.keys():
+            for key in list(filters.keys()):
 
                 # TODO eventually we wanna use class-based list filters and handle
                 # it more generically (like Django)
@@ -138,7 +142,7 @@ class ModelAdmin(BaseModelAdmin):
         qs = qs.limit(self.list_per_page)
 
         if execute:
-            raise StandardError('This should never happen')
+            raise Exception('This should never happen')
             qs = qs.all()
 
         if self.select_related:
