@@ -222,6 +222,4 @@ def model_form(
     field_dict = model_fields(
         model, fields, readonly_fields, exclude, field_args, converter
     )
-    return type(
-        native_str(model._meta.object_name + "Form"), (base_class,), field_dict
-    )
+    return type(native_str(model._meta.object_name + "Form"), (base_class,), field_dict)
