@@ -4,16 +4,10 @@ Tools for generating forms based on MongoEngine Document schemas.
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-try:
-    # Python 2
-    from __builtin__ import str as builtin_str
-except ImportError:
-    # Python 3
-    from builtins import str as builtin_str
-
 from builtins import str
-from past.builtins import basestring
 from builtins import object
+from future.utils import native_str
+from past.builtins import basestring
 import inspect
 from werkzeug import secure_filename
 from wtforms import Form, validators, fields as f
@@ -365,7 +359,7 @@ def model_form(
 
     field_dict["populate_obj"] = populate_obj
 
-    return type(builtin_str(model.__name__ + "Form"), (base_class,), field_dict)
+    return type(native_str(model.__name__ + "Form"), (base_class,), field_dict)
 
 
 class AdminModelConverter(AdminModelConverter_, ModelConverter):

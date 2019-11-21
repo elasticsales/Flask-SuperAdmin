@@ -3,14 +3,8 @@ Tools for generating forms based on Django Model schemas.
 """
 from __future__ import unicode_literals
 
-try:
-    # Python 2
-    from __builtin__ import str as builtin_str
-except ImportError:
-    # Python 3
-    from builtins import str as builtin_str
-
 from builtins import object
+from future.utils import native_str
 from wtforms import fields as f
 from wtforms import Form
 from wtforms import validators
@@ -73,7 +67,7 @@ class AdminModelConverter(ModelConverterBase):
         converters = {}
         if simple_conversions is None:
             simple_conversions = self.DEFAULT_SIMPLE_CONVERSIONS
-        for field_type, django_fields in list(simple_conversions.items()):
+        for field_type, django_fields in simple_conversions.items():
             converter = self.make_simple_converter(field_type)
             for name in django_fields:
                 converters[name] = converter
@@ -229,5 +223,5 @@ def model_form(
         model, fields, readonly_fields, exclude, field_args, converter
     )
     return type(
-        builtin_str(model._meta.object_name + "Form"), (base_class,), field_dict
+        native_str(model._meta.object_name + "Form"), (base_class,), field_dict
     )

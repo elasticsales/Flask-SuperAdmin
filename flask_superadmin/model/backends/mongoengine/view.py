@@ -66,7 +66,7 @@ class ModelAdmin(BaseModelAdmin):
     def get_queryset(self, filters=None):
         qs = self.model.objects
         if filters:
-            for key in list(filters.keys()):
+            for key in filters.keys():
 
                 # TODO eventually we wanna use class-based list filters and handle
                 # it more generically (like Django)

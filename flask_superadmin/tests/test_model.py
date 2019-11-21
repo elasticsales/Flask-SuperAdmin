@@ -93,7 +93,7 @@ class MockModelView(base.BaseModelAdmin):
 
     def get_list(self, page, sort, sort_desc, search_query, **kwargs):
         self.search_arguments.append((page, sort, sort_desc, search_query))
-        return len(self.all_models), iter(list(self.all_models.values()))
+        return len(self.all_models), iter(self.all_models.values())
 
     def save_model(self, instance, form, adding=False):
         if adding:
