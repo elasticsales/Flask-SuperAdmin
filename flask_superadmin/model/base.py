@@ -149,6 +149,9 @@ class BaseModelAdmin(BaseView):
                 if callable(value):
                     value = value()
 
+            if isinstance(value, Enum):
+                value = value.value
+
             if not value:
                 break
 
