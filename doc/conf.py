@@ -45,8 +45,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"flask-superadmin"
-copyright = u"2012, Syrus Akbary"
+project = "flask-superadmin"
+copyright = "2012, Syrus Akbary"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -194,8 +194,8 @@ latex_documents = [
     (
         "index",
         "flask-superadmin",
-        u"Flask-SuperAdmin documentation",
-        u"Syrus Akbary",
+        "Flask-SuperAdmin documentation",
+        "Syrus Akbary",
         "manual",
     ),
 ]
@@ -229,8 +229,8 @@ man_pages = [
     (
         "index",
         "flask-superadmin",
-        u"Flask-SuperAdmin documentation",
-        [u"Syrus Akbary"],
+        "Flask-SuperAdmin documentation",
+        ["Syrus Akbary"],
         1,
     )
 ]
@@ -248,8 +248,8 @@ texinfo_documents = [
     (
         "index",
         "flask-superadmin",
-        u"Flask-SuperAdmin documentation",
-        u"Syrus Akbary",
+        "Flask-SuperAdmin documentation",
+        "Syrus Akbary",
         "Flask-SuperAdmin",
         "One line description of project.",
         "Miscellaneous",
