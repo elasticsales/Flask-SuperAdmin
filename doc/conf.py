@@ -273,12 +273,12 @@ intersphinx_mapping = {"http://docs.python.org/": None}
 try:
     __import__("flask_theme_support")
 except ImportError, e:
-    print "-" * 74
-    print "Warning: Flask themes unavailable. Building with default theme"
-    print "If you want the Flask themes, run this command and build again:"
-    print
-    print " git submodule update --init"
-    print "-" * 74
+    print("-" * 74)
+    print("Warning: Flask themes unavailable. Building with default theme")
+    print("If you want the Flask themes, run this command and build again:")
+    print()
+    print(" git submodule update --init")
+    print("-" * 74)
 
     pygments_style = "tango"
     html_theme = "default"
