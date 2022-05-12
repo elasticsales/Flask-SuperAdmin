@@ -20,7 +20,7 @@ packaging==19.2
 pathlib2==2.3.5
 pdbpp==0.10.2
 pluggy==0.13.0
-py==1.8.0
+py==1.8.2
 Pygments==2.4.2
 pymongo==3.7.0
 pyparsing==2.4.5
