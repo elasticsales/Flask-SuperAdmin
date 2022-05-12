@@ -6,7 +6,6 @@ workflows:
     jobs:
       - test-3.8
       - test-3.9
-      - test-3.10
       - black
 
 defaults: &defaults
@@ -33,11 +32,6 @@ jobs:
     <<: *defaults
     docker:
       - image: circleci/python:3.9
-      - image: mongo
-  test-3.10:
-    <<: *defaults
-    docker:
-      - image: circleci/python:3.10
       - image: mongo
   black:
     working_directory: ~/code
